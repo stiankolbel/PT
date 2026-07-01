@@ -1,0 +1,1329 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Treningslogg">
+<meta name="theme-color" content="#0f1115">
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%234f8cff'/%3E%3Ctext x='50' y='65' font-size='50' text-anchor='middle' fill='white'%3E💪%3C/text%3E%3C/svg%3E">
+<title>Treningslogg</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: #0f1115;
+    color: #e8eaed;
+    padding: 16px;
+    padding-bottom: 80px;
+    max-width: 600px;
+    margin: 0 auto;
+    line-height: 1.4;
+  }
+  h1 { font-size: 22px; margin-bottom: 4px; }
+  .sub { color: #8b92a1; font-size: 13px; margin-bottom: 16px; }
+  
+  .nav {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 16px;
+    overflow-x: auto;
+    padding-bottom: 4px;
+  }
+  .nav button {
+    background: #1a1d24;
+    color: #e8eaed;
+    border: 1px solid #2a2f3a;
+    padding: 8px 14px;
+    border-radius: 8px;
+    font-size: 14px;
+    white-space: nowrap;
+    cursor: pointer;
+  }
+  .nav button.active {
+    background: #4f8cff;
+    border-color: #4f8cff;
+    color: white;
+  }
+  
+  .card {
+    background: #1a1d24;
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 12px;
+    border: 1px solid #2a2f3a;
+  }
+  
+  .week-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+  .week-bar label { font-size: 13px; color: #8b92a1; }
+  .week-bar select {
+    background: #1a1d24;
+    color: #e8eaed;
+    border: 1px solid #2a2f3a;
+    padding: 6px 10px;
+    border-radius: 6px;
+    font-size: 14px;
+  }
+  
+  .day-pick {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+  .day-pick button {
+    background: #1a1d24;
+    color: #e8eaed;
+    border: 1px solid #2a2f3a;
+    padding: 12px 8px;
+    border-radius: 10px;
+    font-size: 13px;
+    cursor: pointer;
+    text-align: left;
+  }
+  .day-pick button.active {
+    background: #2a3a5f;
+    border-color: #4f8cff;
+  }
+  .day-pick .day-title { font-weight: 600; display: block; margin-bottom: 2px; }
+  .day-pick .day-sub { font-size: 11px; color: #8b92a1; }
+  
+  .exercise {
+    margin-bottom: 14px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid #2a2f3a;
+  }
+  .exercise:last-child { border-bottom: none; }
+  
+  .ex-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 8px;
+  }
+  .ex-name { font-weight: 600; font-size: 15px; }
+  .ex-target { font-size: 12px; color: #8b92a1; }
+  
+  .last-time {
+    font-size: 11px;
+    color: #5fb56f;
+    margin-bottom: 8px;
+  }
+  
+  .rest-info {
+    font-size: 11px;
+    color: #c4a368;
+    margin-bottom: 6px;
+    background: #2a2418;
+    padding: 4px 8px;
+    border-radius: 4px;
+    display: inline-block;
+  }
+  
+  .sets {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .set-row {
+    display: grid;
+    grid-template-columns: 30px 1fr 1fr 60px 32px;
+    gap: 6px;
+    align-items: center;
+  }
+  .set-row .label {
+    font-size: 12px;
+    color: #8b92a1;
+    text-align: center;
+  }
+  .set-row input {
+    background: #0f1115;
+    color: #e8eaed;
+    border: 1px solid #2a2f3a;
+    padding: 8px 4px;
+    border-radius: 6px;
+    font-size: 16px;
+    width: 100%;
+    text-align: center;
+  }
+  .set-row input:focus {
+    outline: none;
+    border-color: #4f8cff;
+  }
+  .set-row .remove-set {
+    background: #2a1d1d;
+    color: #ff6b6b;
+    border: 1px solid #3a2a2a;
+    border-radius: 6px;
+    padding: 6px;
+    cursor: pointer;
+    font-size: 14px;
+  }
+  
+  .header-row {
+    display: grid;
+    grid-template-columns: 30px 1fr 1fr 60px 32px;
+    gap: 6px;
+    margin-bottom: 4px;
+    font-size: 11px;
+    color: #8b92a1;
+    text-align: center;
+  }
+  
+  .add-set {
+    background: transparent;
+    color: #4f8cff;
+    border: 1px dashed #2a2f3a;
+    padding: 6px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 13px;
+    width: 100%;
+    margin-top: 6px;
+  }
+  
+  .save-btn {
+    background: #4f8cff;
+    color: white;
+    border: none;
+    padding: 14px;
+    border-radius: 10px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    width: 100%;
+    margin-top: 12px;
+  }
+  .save-btn:disabled { opacity: 0.5; }
+  
+  .toast {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #2a3a5f;
+    color: white;
+    padding: 12px 20px;
+    border-radius: 8px;
+    font-size: 14px;
+    opacity: 0;
+    transition: opacity 0.3s;
+    pointer-events: none;
+    z-index: 100;
+  }
+  .toast.show { opacity: 1; }
+  
+  .history-item {
+    border-bottom: 1px solid #2a2f3a;
+    padding: 10px 0;
+  }
+  .history-item:last-child { border-bottom: none; }
+  .history-date {
+    font-size: 12px;
+    color: #8b92a1;
+    margin-bottom: 4px;
+  }
+  .history-day { font-weight: 600; margin-bottom: 4px; }
+  .history-summary { font-size: 13px; color: #b8bdc7; }
+  
+  .history-summary-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  
+  .expand-btn {
+    background: transparent;
+    color: #8b92a1;
+    border: 1px solid #2a2f3a;
+    border-radius: 6px;
+    padding: 4px 10px;
+    cursor: pointer;
+    font-size: 12px;
+    flex-shrink: 0;
+  }
+  
+  .history-details {
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px dashed #2a2f3a;
+  }
+  
+  .ex-detail {
+    margin-bottom: 10px;
+    font-size: 13px;
+  }
+  
+  .set-detail {
+    color: #b8bdc7;
+    font-size: 12px;
+    margin-left: 8px;
+    padding: 2px 0;
+  }
+  
+  .history-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 12px;
+  }
+  
+  .edit-btn, .delete-btn {
+    flex: 1;
+    padding: 8px;
+    border-radius: 6px;
+    font-size: 13px;
+    cursor: pointer;
+    border: 1px solid;
+  }
+  
+  .edit-btn {
+    background: #1a2a3a;
+    color: #4f8cff;
+    border-color: #2a4a6f;
+  }
+  
+  .delete-btn {
+    background: #2a1d1d;
+    color: #ff6b6b;
+    border-color: #3a2a2a;
+  }
+  
+  .history-notes {
+    font-size: 12px;
+    color: #c4a368;
+    margin-top: 6px;
+    padding: 6px 8px;
+    background: #2a2418;
+    border-radius: 6px;
+    border-left: 2px solid #c4a368;
+    white-space: pre-wrap;
+  }
+  
+  .pr-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px solid #2a2f3a;
+    font-size: 14px;
+  }
+  .pr-item:last-child { border-bottom: none; }
+  .pr-value { color: #5fb56f; font-weight: 600; }
+  
+  .empty { color: #8b92a1; font-style: italic; padding: 20px; text-align: center; }
+  
+  .progression-tip {
+    background: #1a2a1f;
+    border: 1px solid #2a4a3a;
+    color: #8fd9a0;
+    padding: 10px;
+    border-radius: 8px;
+    font-size: 12px;
+    margin-bottom: 12px;
+  }
+  
+  .danger-btn {
+    background: transparent;
+    color: #ff6b6b;
+    border: 1px solid #3a2a2a;
+    padding: 10px;
+    border-radius: 8px;
+    font-size: 13px;
+    cursor: pointer;
+    width: 100%;
+    margin-top: 8px;
+  }
+</style>
+</head>
+<body>
+
+<h1>Treningslogg</h1>
+<p class="sub" id="subtitle">Push/Pull/Bein/Overkropp 8 uker</p>
+
+<div class="nav">
+  <button class="active" data-view="log">Logg økt</button>
+  <button data-view="history">Historikk</button>
+  <button data-view="pr">PR-er</button>
+</div>
+
+<div id="view-log">
+  <div class="card">
+    <div class="week-bar">
+      <div>
+        <label>Programuke</label><br>
+        <select id="weekSelect"></select>
+      </div>
+      <div style="text-align:right">
+        <label>Dato</label><br>
+        <input type="date" id="dateInput" style="background:#1a1d24;color:#e8eaed;border:1px solid #2a2f3a;padding:6px;border-radius:6px;font-size:16px;">
+      </div>
+    </div>
+    
+    <div class="day-pick" id="dayPick"></div>
+    
+    <div id="progressionTip" class="progression-tip" style="display:none"></div>
+  </div>
+  
+  <div id="exerciseList"></div>
+  
+  <div id="editBanner" class="card" style="display:none;background:#2a2418;border-color:#c4a368">
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <div style="color:#c4a368;font-size:13px">✏️ Redigerer eksisterende økt</div>
+      <button id="cancelEditBtn" style="background:transparent;color:#c4a368;border:1px solid #c4a368;padding:4px 10px;border-radius:6px;font-size:12px;cursor:pointer">Avbryt</button>
+    </div>
+  </div>
+  
+  <div class="card">
+    <label style="font-size:13px;color:#8b92a1;display:block;margin-bottom:6px">Notater fra økten</label>
+    <textarea id="sessionNotes" placeholder="Hvordan føltes det? Endringer i program? Smerter? Energinivå?" style="width:100%;min-height:80px;background:#0f1115;color:#e8eaed;border:1px solid #2a2f3a;border-radius:8px;padding:10px;font-size:16px;font-family:inherit;resize:vertical;box-sizing:border-box"></textarea>
+  </div>
+  
+  <button class="save-btn" id="saveBtn">Lagre økt</button>
+</div>
+
+<div id="view-history" style="display:none">
+  <div class="card">
+    <h3 style="margin-bottom:10px;font-size:16px">Tidligere økter</h3>
+    <div id="historyList"></div>
+  </div>
+  <div class="card">
+    <h3 style="margin-bottom:8px;font-size:14px">Backup / gjenoppretting</h3>
+    <p style="font-size:12px;color:#8b92a1;margin-bottom:10px">Lagring er knyttet til denne appen. Eksporter regelmessig for å sikre dataene.</p>
+    <button id="exportBtn" style="background:#1a3a2a;color:#5fb56f;border:1px solid #2a4a3a;padding:10px;border-radius:8px;font-size:13px;cursor:pointer;width:100%;margin-bottom:8px">📤 Eksporter alle data</button>
+    <button id="importBtn" style="background:#1a2a3a;color:#4f8cff;border:1px solid #2a3a5f;padding:10px;border-radius:8px;font-size:13px;cursor:pointer;width:100%;margin-bottom:8px">📥 Importer data</button>
+    <textarea id="dataIO" placeholder="Eksportert data vises her, eller lim inn data for import..." style="width:100%;min-height:100px;background:#0f1115;color:#e8eaed;border:1px solid #2a2f3a;border-radius:8px;padding:10px;font-size:11px;font-family:monospace;resize:vertical;box-sizing:border-box;display:none"></textarea>
+  </div>
+  <button class="danger-btn" id="clearBtn">Slett all data</button>
+</div>
+
+<div id="view-pr" style="display:none">
+  <div class="card">
+    <h3 style="margin-bottom:10px;font-size:16px">Personlige rekorder</h3>
+    <p style="font-size:12px;color:#8b92a1;margin-bottom:10px">Beste arbeidssett (vekt × reps)</p>
+    <div id="prList"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// Standalone-versjon - bruker nettleserens localStorage
+// Fungerer i Chrome, Safari, Firefox - også på iPhone (Legg til på Hjemskjerm)
+const LS_PREFIX = 'treningslogg_ppl_';
+window.storage = {
+  async get(key) {
+    const v = localStorage.getItem(LS_PREFIX + key);
+    if (v === null) throw new Error('Key not found');
+    return { key, value: v };
+  },
+  async set(key, value) {
+    localStorage.setItem(LS_PREFIX + key, value);
+    return { key, value };
+  },
+  async delete(key) {
+    localStorage.removeItem(LS_PREFIX + key);
+    return { key, deleted: true };
+  },
+  async list(prefix) {
+    const fullPrefix = LS_PREFIX + (prefix || '');
+    const keys = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i);
+      if (k && k.startsWith(fullPrefix)) keys.push(k.substring(LS_PREFIX.length));
+    }
+    return { keys, prefix: prefix || '' };
+  }
+};
+
+// Programdefinisjon - Push/Pull/Bein/Overkropp
+const PROGRAM = {
+  'push': {
+    name: 'Push (Mandag)',
+    sub: 'Bryst, skuldre, triceps',
+    exercises: [
+      { name: 'Benkpress', target: '4 × 5 @ RPE 8', sets: 4, rest: '3 min', mainLift: true },
+      { name: 'Militærpress stående', target: '4 × 6 @ RPE 8', sets: 4, rest: '2.5 min', mainLift: true },
+      { name: 'Skråbenk manualpress', target: '3 × 8-10 @ RPE 8', sets: 3, rest: '2 min' },
+      { name: 'Sideheving', target: '4 × 12-15 @ RPE 9', sets: 4, rest: '60 s' },
+      { name: 'Cable fly', target: '3 × 12 @ RPE 8', sets: 3, rest: '60 s' },
+      { name: 'Triceps pushdown', target: '3 × 10-12 @ RPE 8', sets: 3, rest: '90 s' },
+      { name: 'Overhead triceps extension', target: '3 × 10-12 @ RPE 8', sets: 3, rest: '90 s' }
+    ]
+  },
+  'pull': {
+    name: 'Pull (Tirsdag)',
+    sub: 'Rygg, biceps, bakre delt',
+    exercises: [
+      { name: 'Pendlay row / stang-rodd', target: '4 × 5 @ RPE 8', sets: 4, rest: '3 min', mainLift: true },
+      { name: 'Pullups (vektet)', target: '4 × 6-8 @ RPE 8', sets: 4, rest: '2.5 min', mainLift: true },
+      { name: 'Sittende rodd (kabel)', target: '3 × 10 @ RPE 8', sets: 3, rest: '2 min' },
+      { name: 'Lat pulldown', target: '3 × 10-12 @ RPE 8', sets: 3, rest: '90 s' },
+      { name: 'Face pull', target: '4 × 12-15 @ RPE 8', sets: 4, rest: '60 s' },
+      { name: 'EZ-curl', target: '3 × 8-10 @ RPE 8', sets: 3, rest: '90 s' },
+      { name: 'Hammer curl', target: '3 × 10-12 @ RPE 8', sets: 3, rest: '60 s' }
+    ]
+  },
+  'bein': {
+    name: 'Bein (Torsdag)',
+    sub: 'Full beindag, høyt volum',
+    exercises: [
+      { name: 'Knebøy', target: '4 × 5 @ RPE 8', sets: 4, rest: '3 min', mainLift: true },
+      { name: 'Rumensk markløft', target: '4 × 6-8 @ RPE 8', sets: 4, rest: '3 min', mainLift: true },
+      { name: 'Bulgarsk utfall', target: '3 × 8/bein @ RPE 8', sets: 3, rest: '2 min' },
+      { name: 'Leg press', target: '3 × 10 @ RPE 8', sets: 3, rest: '2 min' },
+      { name: 'Leg curl liggende', target: '4 × 10-12 @ RPE 8', sets: 4, rest: '90 s' },
+      { name: 'Leg extension', target: '3 × 12-15 @ RPE 9', sets: 3, rest: '60 s' },
+      { name: 'Stående kalvhev', target: '4 × 8 @ RPE 9', sets: 4, rest: '90 s' },
+      { name: 'Sittende kalvhev', target: '3 × 12-15 @ RPE 9', sets: 3, rest: '60 s' }
+    ]
+  },
+  'overkropp': {
+    name: 'Overkropp (Fredag)',
+    sub: 'Skuldre, armer, svake punkter',
+    exercises: [
+      { name: 'Skråbenk manualpress', target: '4 × 8-10 @ RPE 8', sets: 4, rest: '2 min' },
+      { name: 'Manual skulderpress', target: '4 × 8-10 @ RPE 8', sets: 4, rest: '2 min' },
+      { name: 'T-bar row / kabel-rodd lav', target: '3 × 10 @ RPE 8', sets: 3, rest: '2 min' },
+      { name: 'Sideheving (kabel)', target: '4 × 12-15 @ RPE 9', sets: 4, rest: '60 s' },
+      { name: 'Bakre delt fly', target: '4 × 12-15 @ RPE 9', sets: 4, rest: '60 s' },
+      { name: 'Preacher curl', target: '3 × 10-12 @ RPE 8', sets: 3, rest: '90 s' },
+      { name: 'Triceps dip (vektet)', target: '3 × 8-10 @ RPE 8', sets: 3, rest: '90 s' },
+      { name: 'Hengende beinhev', target: '3 × 10-12 @ RPE 8', sets: 3, rest: '90 s' }
+    ]
+  }
+};
+
+// Justerer øvelser basert på programmets uke (periodisering)
+function adjustForWeek(exercises, week) {
+  return exercises.map(ex => {
+    const adjusted = { ...ex };
+    
+    if (ex.mainLift) {
+      // Hovedløft: ulikt sett/reps/RPE per uke
+      switch(week) {
+        case 1:
+          adjusted.target = '4 × 5 @ RPE 7';
+          adjusted.sets = 4;
+          break;
+        case 2:
+          adjusted.target = '4 × 5 @ RPE 8';
+          adjusted.sets = 4;
+          break;
+        case 3:
+          adjusted.target = '5 × 5 @ RPE 8';
+          adjusted.sets = 5;
+          break;
+        case 4:
+          adjusted.target = '2 × 5 @ 65% av uke 3 (RPE 4-5)';
+          adjusted.sets = 2;
+          break;
+        case 5:
+          adjusted.target = '5 × 3 @ RPE 8 (+5-7.5kg fra uke 3)';
+          adjusted.sets = 5;
+          break;
+        case 6:
+          adjusted.target = '5 × 3 @ RPE 9 (+2.5-5kg fra uke 5)';
+          adjusted.sets = 5;
+          break;
+        case 7:
+          adjusted.target = '4 × 2 @ RPE 9';
+          adjusted.sets = 4;
+          break;
+        case 8:
+          adjusted.target = 'Peak - test 3RM eller 1RM';
+          adjusted.sets = 5;
+          break;
+      }
+    } else {
+      // Assistanseøvelser
+      if (week === 4) {
+        // Deload: halvert volum, ~70% av vanlig vekt
+        const newSets = Math.max(2, Math.ceil(ex.sets / 2));
+        adjusted.sets = newSets;
+        // Erstatt sett-antall i target
+        adjusted.target = ex.target.replace(/^\d+ ×/, `${newSets} ×`).replace(/@ RPE \d+/, '@ RPE 5-6 (~70% vekt)');
+      } else if (week === 5 || week === 6) {
+        // Lett intensivering på assistanse i uke 5-6: senk reps med 2 hvis 8+
+        const repMatch = ex.target.match(/× (\d+)-?(\d+)?/);
+        if (repMatch) {
+          const low = parseInt(repMatch[1]);
+          const high = repMatch[2] ? parseInt(repMatch[2]) : low;
+          if (low >= 8) {
+            const newLow = Math.max(6, low - 2);
+            const newHigh = Math.max(8, high - 2);
+            const repStr = newLow === newHigh ? `× ${newLow}` : `× ${newLow}-${newHigh}`;
+            adjusted.target = ex.target.replace(/× \d+-?\d+?/, repStr);
+          }
+        }
+      }
+      // Uke 1-3, 7, 8: assistanseøvelser kjører som standard
+    }
+    
+    return adjusted;
+  });
+}
+
+const WEEK_GUIDE = {
+  1: 'Akkumulering – 4×5 @ RPE 7 på hovedløft',
+  2: 'Akkumulering – 4×5 @ RPE 8, +2.5kg over / +5kg under',
+  3: 'Akkumulering – 5×5 @ RPE 8, samme vekt som uke 2',
+  4: 'DELOAD – 3×5 @ 65% av uke 3, halvert volum',
+  5: 'Intensivering – 5×3 @ RPE 8, +5-7.5kg fra uke 3',
+  6: 'Intensivering – 5×3 @ RPE 9',
+  7: 'Intensivering – 4×2 @ RPE 9',
+  8: 'PEAK – test ny 3RM eller 1RM'
+};
+
+let currentDay = 'push';
+let currentWeek = 1;
+let editingSessionKey = null; // If set, save will update this key instead of creating new
+
+// Init
+function init() {
+  // Week selector
+  const weekSel = document.getElementById('weekSelect');
+  for (let i = 1; i <= 8; i++) {
+    const opt = document.createElement('option');
+    opt.value = i;
+    opt.textContent = `Uke ${i}`;
+    weekSel.appendChild(opt);
+  }
+  
+  // Date default
+  const today = new Date().toISOString().split('T')[0];
+  document.getElementById('dateInput').value = today;
+  
+  // Day picker
+  const dayPick = document.getElementById('dayPick');
+  Object.entries(PROGRAM).forEach(([key, prog]) => {
+    const btn = document.createElement('button');
+    btn.dataset.day = key;
+    btn.innerHTML = `<span class="day-title">${prog.name}</span><span class="day-sub">${prog.sub}</span>`;
+    btn.onclick = () => selectDay(key);
+    dayPick.appendChild(btn);
+  });
+  
+  // Load saved state
+  loadState().then(() => {
+    selectDay(currentDay);
+    document.getElementById('weekSelect').value = currentWeek;
+    updateWeekTip();
+  });
+  
+  // Event listeners
+  weekSel.onchange = (e) => {
+    currentWeek = parseInt(e.target.value);
+    saveState();
+    updateWeekTip();
+    renderExercises(); // Oppdater øvelser med riktig sett/reps/RPE for uken
+  };
+  
+  // Nav
+  document.querySelectorAll('.nav button').forEach(btn => {
+    btn.onclick = () => switchView(btn.dataset.view);
+  });
+  
+  document.getElementById('saveBtn').onclick = saveSession;
+  document.getElementById('cancelEditBtn').onclick = cancelEdit;
+  document.getElementById('clearBtn').onclick = clearAllData;
+  document.getElementById('exportBtn').onclick = exportData;
+  document.getElementById('importBtn').onclick = importData;
+}
+
+function updateWeekTip() {
+  const tip = document.getElementById('progressionTip');
+  tip.style.display = 'block';
+  tip.textContent = `Uke ${currentWeek}: ${WEEK_GUIDE[currentWeek]}`;
+}
+
+function selectDay(dayKey) {
+  currentDay = dayKey;
+  document.querySelectorAll('.day-pick button').forEach(b => {
+    b.classList.toggle('active', b.dataset.day === dayKey);
+  });
+  renderExercises();
+  saveState();
+}
+
+async function renderExercises() {
+  const prog = PROGRAM[currentDay];
+  const list = document.getElementById('exerciseList');
+  list.innerHTML = '';
+  
+  // Get last session data for each exercise
+  const lastData = await getLastSessionData(currentDay);
+  
+  // Justér øvelser basert på aktiv uke (periodisering)
+  const exercisesForWeek = adjustForWeek(prog.exercises, currentWeek);
+  
+  exercisesForWeek.forEach((ex, exIdx) => {
+    const card = document.createElement('div');
+    card.className = 'card';
+    
+    const last = lastData[ex.name];
+    let lastHtml = '';
+    if (last) {
+      const setsStr = last.sets.map(s => `${s.weight || '-'}kg × ${s.reps || '-'}`).join(', ');
+      lastHtml = `<div class="last-time">📊 Sist (${last.date}): ${setsStr}</div>`;
+    }
+    
+    card.innerHTML = `
+      <div class="exercise" data-ex-idx="${exIdx}" data-ex-name="${ex.name}">
+        <div class="ex-header">
+          <div class="ex-name">${ex.name}</div>
+          <div class="ex-target">${ex.target}</div>
+        </div>
+        ${ex.rest ? `<div class="rest-info">⏱ Hvile: ${ex.rest}</div>` : ''}
+        ${lastHtml}
+        <div class="header-row">
+          <span>#</span><span>Vekt (kg)</span><span>Reps</span><span>RPE</span><span></span>
+        </div>
+        <div class="sets" id="sets-${exIdx}"></div>
+        <button class="add-set" data-add="${exIdx}">+ Legg til sett</button>
+      </div>
+    `;
+    list.appendChild(card);
+    
+    // Add sets
+    for (let i = 0; i < ex.sets; i++) {
+      addSetRow(exIdx, i + 1);
+    }
+    
+    // Add set button
+    card.querySelector('.add-set').onclick = () => {
+      const setsDiv = document.getElementById(`sets-${exIdx}`);
+      addSetRow(exIdx, setsDiv.children.length + 1);
+    };
+  });
+}
+
+function addSetRow(exIdx, setNum) {
+  const setsDiv = document.getElementById(`sets-${exIdx}`);
+  const row = document.createElement('div');
+  row.className = 'set-row';
+  row.innerHTML = `
+    <span class="label">${setNum}</span>
+    <input type="number" inputmode="decimal" step="0.5" placeholder="kg" class="weight-in">
+    <input type="number" inputmode="numeric" placeholder="reps" class="reps-in">
+    <input type="number" inputmode="decimal" step="0.5" placeholder="RPE" class="rpe-in" min="1" max="10">
+    <button class="remove-set">×</button>
+  `;
+  row.querySelector('.remove-set').onclick = () => {
+    row.remove();
+    // Renumber
+    [...setsDiv.children].forEach((r, i) => {
+      r.querySelector('.label').textContent = i + 1;
+    });
+  };
+  setsDiv.appendChild(row);
+}
+
+async function getLastSessionData(dayKey) {
+  try {
+    const result = await window.storage.list('session_');
+    if (!result || !result.keys) return {};
+    
+    const sessionKeys = result.keys.sort().reverse(); // newest first
+    
+    for (const key of sessionKeys) {
+      try {
+        const r = await window.storage.get(key);
+        if (!r) continue;
+        const session = JSON.parse(r.value);
+        if (session.day === dayKey) {
+          // Build map of exercise -> sets
+          const map = {};
+          session.exercises.forEach(ex => {
+            map[ex.name] = { sets: ex.sets, date: session.date };
+          });
+          return map;
+        }
+      } catch(e) {}
+    }
+    return {};
+  } catch(e) {
+    return {};
+  }
+}
+
+async function saveSession() {
+  const saveBtn = document.getElementById('saveBtn');
+  saveBtn.disabled = true;
+  saveBtn.textContent = 'Lagrer...';
+  
+  const date = document.getElementById('dateInput').value;
+  const week = currentWeek;
+  const day = currentDay;
+  
+  const exercises = [];
+  document.querySelectorAll('.exercise').forEach(exEl => {
+    const exName = exEl.dataset.exName;
+    const sets = [];
+    exEl.querySelectorAll('.set-row').forEach(row => {
+      const weight = row.querySelector('.weight-in').value;
+      const reps = row.querySelector('.reps-in').value;
+      const rpe = row.querySelector('.rpe-in').value;
+      if (weight || reps) {
+        sets.push({
+          weight: weight ? parseFloat(weight) : null,
+          reps: reps ? parseInt(reps) : null,
+          rpe: rpe ? parseFloat(rpe) : null
+        });
+      }
+    });
+    if (sets.length > 0) {
+      exercises.push({ name: exName, sets });
+    }
+  });
+  
+  if (exercises.length === 0) {
+    toast('Ingen sett å lagre');
+    saveBtn.disabled = false;
+    saveBtn.textContent = 'Lagre økt';
+    return;
+  }
+  
+  const session = {
+    date: String(date || ''),
+    week: Number(week),
+    day: String(day),
+    dayName: String(PROGRAM[day].name),
+    exercises: exercises.map(ex => ({
+      name: String(ex.name),
+      sets: ex.sets.map(s => ({
+        weight: s.weight === null ? 0 : Number(s.weight),
+        reps: s.reps === null ? 0 : Number(s.reps),
+        rpe: s.rpe === null ? 0 : Number(s.rpe)
+      }))
+    })),
+    notes: String(document.getElementById('sessionNotes').value.trim()),
+    timestamp: Date.now()
+  };
+  
+  const key = editingSessionKey || `session_${Date.now()}`;
+  const isEditing = !!editingSessionKey;
+  let jsonValue;
+  try {
+    jsonValue = JSON.stringify(session);
+  } catch(e) {
+    toast('Feil ved serialisering: ' + e.message);
+    saveBtn.disabled = false;
+    saveBtn.textContent = 'Lagre økt';
+    return;
+  }
+  
+  try {
+    await window.storage.set(key, jsonValue);
+    
+    // Update PRs (non-blocking - don't fail save if PR update fails)
+    try {
+      await updatePRs(session.exercises);
+    } catch(prErr) {
+      console.warn('PR update failed:', prErr);
+    }
+    
+    toast(isEditing ? '✓ Økt oppdatert' : '✓ Økt lagret');
+    
+    // Clear edit mode
+    editingSessionKey = null;
+    document.getElementById('editBanner').style.display = 'none';
+    
+    // Reset notes and re-render
+    document.getElementById('sessionNotes').value = '';
+    setTimeout(() => renderExercises(), 500);
+  } catch(e) {
+    // Show detailed error for debugging
+    const errMsg = e.message || e.toString() || 'ukjent feil';
+    toast('Lagring feilet: ' + errMsg.substring(0, 80));
+    console.error('Storage error:', e, 'Key:', key, 'Value length:', jsonValue.length);
+  }
+  
+  saveBtn.disabled = false;
+  saveBtn.textContent = 'Lagre økt';
+}
+
+async function updatePRs(exercises) {
+  for (const ex of exercises) {
+    // Best set = highest weight * reps product (rough volume PR), or highest weight
+    let bestWeight = 0, bestReps = 0, bestDate = '';
+    
+    // Sanitize exercise name for use in storage key (no spaces, slashes, quotes)
+    const keyName = ex.name.replace(/[\s\/\\'"]+/g, '_');
+    const prKey = `pr_${keyName}`;
+    
+    // Get current PR
+    try {
+      const cur = await window.storage.get(prKey);
+      if (cur && cur.value) {
+        const pr = JSON.parse(cur.value);
+        bestWeight = pr.weight || 0;
+        bestReps = pr.reps || 0;
+      }
+    } catch(e) {}
+    
+    for (const set of ex.sets) {
+      if (set.weight && set.reps) {
+        // Estimated 1RM via Epley: w * (1 + r/30)
+        const cur1rm = bestWeight * (1 + bestReps/30);
+        const new1rm = set.weight * (1 + set.reps/30);
+        if (new1rm > cur1rm) {
+          bestWeight = set.weight;
+          bestReps = set.reps;
+          bestDate = document.getElementById('dateInput').value;
+        }
+      }
+    }
+    
+    if (bestWeight > 0) {
+      try {
+        await window.storage.set(prKey, JSON.stringify({
+          weight: bestWeight,
+          reps: bestReps,
+          date: bestDate || new Date().toISOString().split('T')[0],
+          displayName: ex.name
+        }));
+      } catch(e) {
+        console.warn('Could not save PR for ' + ex.name, e);
+      }
+    }
+  }
+}
+
+async function loadSessionForEdit(session) {
+  editingSessionKey = session._key;
+  
+  // Switch to log view
+  switchView('log');
+  
+  // Set week and day
+  currentWeek = session.week || 1;
+  currentDay = session.day;
+  document.getElementById('weekSelect').value = currentWeek;
+  document.getElementById('dateInput').value = session.date;
+  updateWeekTip();
+  
+  // Update day picker active state
+  document.querySelectorAll('.day-pick button').forEach(b => {
+    b.classList.toggle('active', b.dataset.day === session.day);
+  });
+  
+  // Show edit banner
+  document.getElementById('editBanner').style.display = 'block';
+  
+  // Re-render exercises, then fill in saved values
+  await renderExercises();
+  
+  // Map session exercises by name for lookup
+  const sessionExMap = {};
+  session.exercises.forEach(ex => { sessionExMap[ex.name] = ex.sets; });
+  
+  // Fill in each exercise's sets
+  document.querySelectorAll('.exercise').forEach(exEl => {
+    const exName = exEl.dataset.exName;
+    const savedSets = sessionExMap[exName];
+    if (!savedSets) return;
+    
+    const setsDiv = exEl.querySelector('.sets');
+    // Clear default rows
+    setsDiv.innerHTML = '';
+    // Add rows for each saved set
+    const exIdx = exEl.dataset.exIdx;
+    savedSets.forEach((set, i) => {
+      addSetRow(exIdx, i + 1);
+      const rows = setsDiv.querySelectorAll('.set-row');
+      const row = rows[i];
+      if (row) {
+        row.querySelector('.weight-in').value = set.weight || '';
+        row.querySelector('.reps-in').value = set.reps || '';
+        row.querySelector('.rpe-in').value = set.rpe || '';
+      }
+    });
+  });
+  
+  // Fill in notes
+  document.getElementById('sessionNotes').value = session.notes || '';
+  
+  // Scroll to top
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function cancelEdit() {
+  editingSessionKey = null;
+  document.getElementById('editBanner').style.display = 'none';
+  document.getElementById('sessionNotes').value = '';
+  renderExercises();
+  toast('Redigering avbrutt');
+}
+
+async function loadState() {
+  try {
+    const r = await window.storage.get('state');
+    if (r) {
+      const state = JSON.parse(r.value);
+      currentDay = state.day || 'push';
+      currentWeek = state.week || 1;
+    }
+  } catch(e) {}
+}
+
+async function saveState() {
+  try {
+    await window.storage.set('state', JSON.stringify({
+      day: currentDay,
+      week: currentWeek
+    }));
+  } catch(e) {}
+}
+
+function switchView(view) {
+  document.querySelectorAll('.nav button').forEach(b => {
+    b.classList.toggle('active', b.dataset.view === view);
+  });
+  document.getElementById('view-log').style.display = view === 'log' ? 'block' : 'none';
+  document.getElementById('view-history').style.display = view === 'history' ? 'block' : 'none';
+  document.getElementById('view-pr').style.display = view === 'pr' ? 'block' : 'none';
+  document.getElementById('saveBtn').style.display = view === 'log' ? 'block' : 'none';
+  
+  if (view === 'history') renderHistory();
+  if (view === 'pr') renderPRs();
+}
+
+async function renderHistory() {
+  const list = document.getElementById('historyList');
+  list.innerHTML = '<div class="empty">Laster...</div>';
+  
+  let result;
+  try {
+    result = await window.storage.list('session_');
+  } catch(e) {
+    result = null;
+  }
+  
+  if (!result || !result.keys || result.keys.length === 0) {
+    list.innerHTML = '<div class="empty">Ingen økter lagret ennå</div>';
+    return;
+  }
+  
+  try {
+    const sessions = [];
+    for (const key of result.keys) {
+      try {
+        const r = await window.storage.get(key);
+        if (r) {
+          const session = JSON.parse(r.value);
+          session._key = key;
+          sessions.push(session);
+        }
+      } catch(e) {}
+    }
+    
+    if (sessions.length === 0) {
+      list.innerHTML = '<div class="empty">Ingen økter lagret ennå</div>';
+      return;
+    }
+    
+    sessions.sort((a, b) => b.timestamp - a.timestamp);
+    
+    list.innerHTML = '';
+    sessions.forEach(s => {
+      const item = document.createElement('div');
+      item.className = 'history-item';
+      item.dataset.sessionKey = s._key;
+      
+      const totalSets = s.exercises.reduce((sum, ex) => sum + ex.sets.length, 0);
+      const summary = s.exercises.slice(0, 3).map(ex => {
+        const best = ex.sets.reduce((b, set) => 
+          (set.weight && (!b.weight || set.weight > b.weight)) ? set : b, {});
+        return `${ex.name}: ${best.weight || '-'}×${best.reps || '-'}`;
+      }).join(' · ');
+      
+      // Full details (initially hidden)
+      const detailsHtml = s.exercises.map(ex => {
+        const setsStr = ex.sets.map((set, i) => 
+          `<div class="set-detail">Sett ${i+1}: ${set.weight || '-'}kg × ${set.reps || '-'} reps${set.rpe ? ' @ RPE ' + set.rpe : ''}</div>`
+        ).join('');
+        return `<div class="ex-detail"><strong>${ex.name}</strong>${setsStr}</div>`;
+      }).join('');
+      
+      item.innerHTML = `
+        <div class="history-summary-row">
+          <div style="flex:1">
+            <div class="history-date">${s.date} · Uke ${s.week}</div>
+            <div class="history-day">${s.dayName}</div>
+            <div class="history-summary">${totalSets} sett · ${summary}${s.exercises.length > 3 ? '...' : ''}</div>
+            ${s.notes ? `<div class="history-notes">📝 ${s.notes.replace(/</g,'&lt;')}</div>` : ''}
+          </div>
+          <button class="expand-btn" data-action="expand">▼ Vis</button>
+        </div>
+        <div class="history-details" style="display:none">
+          ${detailsHtml}
+          <div class="history-actions">
+            <button class="edit-btn" data-action="edit">✏️ Rediger</button>
+            <button class="delete-btn" data-action="delete">🗑 Slett</button>
+          </div>
+        </div>
+      `;
+      
+      // Expand toggle - tap entire summary row
+      const summaryRow = item.querySelector('.history-summary-row');
+      summaryRow.style.cursor = 'pointer';
+      summaryRow.onclick = () => {
+        const details = item.querySelector('.history-details');
+        const btn = item.querySelector('.expand-btn');
+        const isOpen = details.style.display !== 'none';
+        details.style.display = isOpen ? 'none' : 'block';
+        btn.textContent = isOpen ? '▼ Vis' : '▲ Skjul';
+      };
+      
+      // Delete - with event isolation
+      const deleteBtn = item.querySelector('[data-action="delete"]');
+      deleteBtn.onclick = async (e) => {
+        e.stopPropagation();
+        
+        // Two-step confirmation in-button (avoid native confirm which may be blocked)
+        if (deleteBtn.dataset.confirming !== 'yes') {
+          deleteBtn.dataset.confirming = 'yes';
+          deleteBtn.textContent = '⚠️ Trykk igjen for å bekrefte';
+          setTimeout(() => {
+            if (deleteBtn.dataset.confirming === 'yes') {
+              deleteBtn.dataset.confirming = '';
+              deleteBtn.textContent = '🗑 Slett';
+            }
+          }, 4000);
+          return;
+        }
+        
+        try {
+          await window.storage.delete(s._key);
+          toast('Økt slettet');
+          renderHistory();
+        } catch(err) {
+          toast('Feil ved sletting: ' + (err.message || err));
+          console.error('Delete error:', err, 'Key:', s._key);
+        }
+      };
+      
+      // Edit - load session back into form
+      const editBtn = item.querySelector('[data-action="edit"]');
+      editBtn.onclick = (e) => {
+        e.stopPropagation();
+        loadSessionForEdit(s);
+      };
+      
+      list.appendChild(item);
+    });
+  } catch(e) {
+    list.innerHTML = '<div class="empty">Feil ved lasting</div>';
+  }
+}
+
+async function renderPRs() {
+  const list = document.getElementById('prList');
+  list.innerHTML = '<div class="empty">Laster...</div>';
+  
+  let result;
+  try {
+    result = await window.storage.list('pr_');
+  } catch(e) {
+    result = null;
+  }
+  
+  if (!result || !result.keys || result.keys.length === 0) {
+    list.innerHTML = '<div class="empty">Ingen PR-er registrert ennå</div>';
+    return;
+  }
+  
+  try {
+    const prs = [];
+    for (const key of result.keys) {
+      try {
+        const r = await window.storage.get(key);
+        if (r && r.value) {
+          const pr = JSON.parse(r.value);
+          // Skip invalid entries
+          if (pr && typeof pr.weight === 'number' && typeof pr.reps === 'number' && pr.weight > 0 && pr.reps > 0) {
+            pr.exercise = pr.displayName || key.substring(3).replace(/_/g, ' ');
+            prs.push(pr);
+          }
+        }
+      } catch(e) {}
+    }
+    
+    if (prs.length === 0) {
+      list.innerHTML = '<div class="empty">Ingen PR-er registrert ennå</div>';
+      return;
+    }
+    
+    // Sort by estimated 1RM
+    prs.sort((a, b) => {
+      const a1rm = a.weight * (1 + a.reps/30);
+      const b1rm = b.weight * (1 + b.reps/30);
+      return b1rm - a1rm;
+    });
+    
+    list.innerHTML = '';
+    prs.forEach(pr => {
+      const item = document.createElement('div');
+      item.className = 'pr-item';
+      const est1rm = Math.round(pr.weight * (1 + pr.reps/30) * 10) / 10;
+      item.innerHTML = `
+        <div>
+          <div>${pr.exercise}</div>
+          <div style="font-size:11px;color:#8b92a1">est. 1RM: ${est1rm}kg · ${pr.date || '-'}</div>
+        </div>
+        <div class="pr-value">${pr.weight}kg × ${pr.reps}</div>
+      `;
+      list.appendChild(item);
+    });
+  } catch(e) {
+    list.innerHTML = '<div class="empty">Feil ved lasting: ' + (e.message || e) + '</div>';
+  }
+}
+
+async function exportData() {
+  try {
+    const sessions = [];
+    const sessionList = await window.storage.list('session_');
+    if (sessionList && sessionList.keys) {
+      for (const key of sessionList.keys) {
+        try {
+          const r = await window.storage.get(key);
+          if (r) sessions.push({ key, data: JSON.parse(r.value) });
+        } catch(e) {}
+      }
+    }
+    
+    const prs = [];
+    const prList = await window.storage.list('pr_');
+    if (prList && prList.keys) {
+      for (const key of prList.keys) {
+        try {
+          const r = await window.storage.get(key);
+          if (r) prs.push({ key, data: JSON.parse(r.value) });
+        } catch(e) {}
+      }
+    }
+    
+    const exportObj = {
+      version: 1,
+      exportedAt: new Date().toISOString(),
+      sessions,
+      prs
+    };
+    
+    const ta = document.getElementById('dataIO');
+    ta.value = JSON.stringify(exportObj, null, 2);
+    ta.style.display = 'block';
+    ta.select();
+    
+    // Try to copy to clipboard
+    try {
+      await navigator.clipboard.writeText(ta.value);
+      toast(`✓ ${sessions.length} økter kopiert til utklippstavle`);
+    } catch(e) {
+      toast(`${sessions.length} økter klar - kopier teksten under`);
+    }
+  } catch(e) {
+    toast('Eksport feilet: ' + (e.message || e));
+  }
+}
+
+async function importData() {
+  const ta = document.getElementById('dataIO');
+  ta.style.display = 'block';
+  
+  if (!ta.value.trim()) {
+    ta.placeholder = 'Lim inn eksportert data her, og trykk Importer igjen';
+    ta.focus();
+    toast('Lim inn data, trykk Importer igjen');
+    return;
+  }
+  
+  let parsed;
+  try {
+    parsed = JSON.parse(ta.value);
+  } catch(e) {
+    toast('Ugyldig data - sjekk at hele eksporten er limt inn');
+    return;
+  }
+  
+  if (!parsed.sessions || !Array.isArray(parsed.sessions)) {
+    toast('Ugyldig format - mangler sessions');
+    return;
+  }
+  
+  try {
+    let count = 0;
+    for (const s of parsed.sessions) {
+      await window.storage.set(s.key, JSON.stringify(s.data));
+      count++;
+    }
+    if (parsed.prs) {
+      for (const p of parsed.prs) {
+        await window.storage.set(p.key, JSON.stringify(p.data));
+      }
+    }
+    toast(`✓ ${count} økter importert`);
+    ta.value = '';
+    ta.style.display = 'none';
+    renderHistory();
+  } catch(e) {
+    toast('Import feilet: ' + (e.message || e));
+  }
+}
+
+async function clearAllData() {
+  const btn = document.getElementById('clearBtn');
+  if (btn.dataset.confirming !== 'yes') {
+    btn.dataset.confirming = 'yes';
+    btn.textContent = '⚠️ Trykk igjen for å slette ALT';
+    setTimeout(() => {
+      if (btn.dataset.confirming === 'yes') {
+        btn.dataset.confirming = '';
+        btn.textContent = 'Slett all data';
+      }
+    }, 4000);
+    return;
+  }
+  btn.dataset.confirming = '';
+  btn.textContent = 'Sletter...';
+  
+  try {
+    const sessions = await window.storage.list('session_');
+    if (sessions && sessions.keys) {
+      for (const key of sessions.keys) {
+        await window.storage.delete(key);
+      }
+    }
+    const prs = await window.storage.list('pr_');
+    if (prs && prs.keys) {
+      for (const key of prs.keys) {
+        await window.storage.delete(key);
+      }
+    }
+    await window.storage.delete('state');
+    toast('All data slettet');
+    setTimeout(() => location.reload(), 1000);
+  } catch(e) {
+    toast('Feil ved sletting: ' + (e.message || e));
+    btn.textContent = 'Slett all data';
+  }
+}
+
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2000);
+}
+
+init();
+</script>
+</body>
+</html>
