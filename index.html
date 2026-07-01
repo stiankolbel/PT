@@ -220,6 +220,63 @@
   }
   .toast.show { opacity: 1; }
   
+  #timerWidget {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    background: #1a1d24;
+    border: 1px solid #2a2f3a;
+    border-radius: 12px;
+    padding: 10px 14px;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+  }
+  .timer-block {
+    flex: 1;
+    text-align: center;
+  }
+  .timer-label {
+    font-size: 10px;
+    color: #8b92a1;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 2px;
+  }
+  .timer-value {
+    font-size: 22px;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    color: #e8eaed;
+  }
+  .timer-value.rest {
+    color: #c4a368;
+  }
+  .timer-value.rest.done {
+    color: #5fb56f;
+    animation: pulse 1s ease-in-out infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+  }
+  .timer-divider {
+    width: 1px;
+    height: 30px;
+    background: #2a2f3a;
+  }
+  .timer-cancel {
+    background: transparent;
+    color: #ff6b6b;
+    border: 1px solid #3a2a2a;
+    border-radius: 6px;
+    padding: 6px 10px;
+    font-size: 11px;
+    cursor: pointer;
+  }
+  
   .history-item {
     border-bottom: 1px solid #2a2f3a;
     padding: 10px 0;
@@ -350,6 +407,20 @@
   <button class="active" data-view="log">Logg økt</button>
   <button data-view="history">Historikk</button>
   <button data-view="pr">PR-er</button>
+</div>
+
+<!-- Flytende timer-widget -->
+<div id="timerWidget" style="display:none">
+  <div class="timer-block">
+    <div class="timer-label">Økt</div>
+    <div id="sessionTime" class="timer-value">00:00</div>
+  </div>
+  <div class="timer-divider"></div>
+  <div class="timer-block">
+    <div class="timer-label" id="restLabel">Hvile</div>
+    <div id="restTime" class="timer-value rest">--:--</div>
+  </div>
+  <button id="timerCancelBtn" class="timer-cancel" style="display:none">Stopp</button>
 </div>
 
 <div id="view-log">
@@ -695,10 +766,22 @@ async function renderExercises() {
       addSetRow(exIdx, i + 1);
     }
     
-    // Add set button
+    // Add set button - kopierer siste sett sine verdier
     card.querySelector('.add-set').onclick = () => {
       const setsDiv = document.getElementById(`sets-${exIdx}`);
+      const lastRow = setsDiv.children[setsDiv.children.length - 1];
+      let copyW = '', copyR = '', copyRPE = '';
+      if (lastRow) {
+        copyW = lastRow.querySelector('.weight-in').value;
+        copyR = lastRow.querySelector('.reps-in').value;
+        copyRPE = lastRow.querySelector('.rpe-in').value;
+      }
       addSetRow(exIdx, setsDiv.children.length + 1);
+      // Fyll den nye raden med samme verdier som forrige
+      const newRow = setsDiv.children[setsDiv.children.length - 1];
+      if (copyW) newRow.querySelector('.weight-in').value = copyW;
+      if (copyR) newRow.querySelector('.reps-in').value = copyR;
+      if (copyRPE) newRow.querySelector('.rpe-in').value = copyRPE;
     };
   });
 }
@@ -721,6 +804,47 @@ function addSetRow(exIdx, setNum) {
       r.querySelector('.label').textContent = i + 1;
     });
   };
+  
+  // Auto-fyll alle tomme sett i samme øvelse når man forlater et felt
+  const weightIn = row.querySelector('.weight-in');
+  const repsIn = row.querySelector('.reps-in');
+  const rpeIn = row.querySelector('.rpe-in');
+  
+  const autoFillAll = () => {
+    [...setsDiv.children].forEach(otherRow => {
+      if (otherRow === row) return; // Ikke overstyr det aktive settet
+      
+      const otherW = otherRow.querySelector('.weight-in');
+      const otherR = otherRow.querySelector('.reps-in');
+      const otherRPE = otherRow.querySelector('.rpe-in');
+      
+      // Kun fyll inn hvis feltet er tomt
+      if (!otherW.value && weightIn.value) otherW.value = weightIn.value;
+      if (!otherR.value && repsIn.value) otherR.value = repsIn.value;
+      if (!otherRPE.value && rpeIn.value) otherRPE.value = rpeIn.value;
+    });
+  };
+  
+  [weightIn, repsIn, rpeIn].forEach(inp => {
+    inp.addEventListener('blur', autoFillAll);
+  });
+  
+  // Start pause-nedtelling når settet er fullt utfylt
+  const checkStartTimer = () => {
+    if (weightIn.value && repsIn.value && rpeIn.value) {
+      // Finn hvile-tid for denne øvelsen
+      const exEl = row.closest('.exercise');
+      const exName = exEl?.dataset.exName;
+      const prog = PROGRAM[currentDay];
+      const ex = prog?.exercises.find(e => e.name === exName);
+      if (ex && ex.rest) {
+        startRestTimer(ex.rest, row);
+      }
+    }
+  };
+  
+  rpeIn.addEventListener('blur', checkStartTimer);
+  
   setsDiv.appendChild(row);
 }
 
@@ -1322,6 +1446,140 @@ function toast(msg) {
   t.classList.add('show');
   setTimeout(() => t.classList.remove('show'), 2000);
 }
+
+// === TIMER-LOGIKK ===
+let sessionStartTime = null;
+let sessionInterval = null;
+let restEndTime = null;
+let restInterval = null;
+
+function formatTime(seconds) {
+  const m = Math.floor(Math.abs(seconds) / 60);
+  const s = Math.abs(seconds) % 60;
+  return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+}
+
+function showTimerWidget() {
+  document.getElementById('timerWidget').style.display = 'flex';
+}
+
+function hideTimerWidget() {
+  document.getElementById('timerWidget').style.display = 'none';
+  document.getElementById('timerCancelBtn').style.display = 'none';
+}
+
+function startSessionTimer() {
+  if (sessionStartTime) return; // Allerede startet
+  sessionStartTime = Date.now();
+  showTimerWidget();
+  document.getElementById('timerCancelBtn').style.display = 'block';
+  updateSessionTimer();
+  sessionInterval = setInterval(updateSessionTimer, 1000);
+}
+
+function updateSessionTimer() {
+  if (!sessionStartTime) return;
+  const elapsed = Math.floor((Date.now() - sessionStartTime) / 1000);
+  document.getElementById('sessionTime').textContent = formatTime(elapsed);
+}
+
+function stopSessionTimer() {
+  if (sessionInterval) clearInterval(sessionInterval);
+  if (restInterval) clearInterval(restInterval);
+  sessionStartTime = null;
+  restEndTime = null;
+  hideTimerWidget();
+  document.getElementById('sessionTime').textContent = '00:00';
+  document.getElementById('restTime').textContent = '--:--';
+  document.getElementById('restTime').classList.remove('done');
+}
+
+function parseRestSeconds(restStr) {
+  // "3 min", "2.5 min", "90 s", "60 s"
+  if (!restStr) return 0;
+  const s = restStr.toLowerCase();
+  if (s.includes('min')) {
+    const min = parseFloat(s.replace('min', '').trim());
+    return Math.round(min * 60);
+  }
+  if (s.includes('s')) {
+    return parseInt(s.replace('s', '').trim());
+  }
+  return 0;
+}
+
+function startRestTimer(restStr, row) {
+  const seconds = parseRestSeconds(restStr);
+  if (seconds <= 0) return;
+  
+  // Start også økt-timer hvis ikke allerede
+  startSessionTimer();
+  
+  restEndTime = Date.now() + seconds * 1000;
+  document.getElementById('restLabel').textContent = `Hvile (${restStr})`;
+  document.getElementById('restTime').classList.remove('done');
+  
+  if (restInterval) clearInterval(restInterval);
+  updateRestTimer();
+  restInterval = setInterval(updateRestTimer, 500);
+  
+  // Scroll timer inn i sync (defensivt - kan feile i noen miljøer)
+  try {
+    const widget = document.getElementById('timerWidget');
+    if (widget.scrollIntoView) widget.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  } catch(e) {}
+}
+
+function updateRestTimer() {
+  if (!restEndTime) return;
+  const remaining = Math.floor((restEndTime - Date.now()) / 1000);
+  const restEl = document.getElementById('restTime');
+  
+  if (remaining > 0) {
+    restEl.textContent = formatTime(remaining);
+    restEl.classList.remove('done');
+  } else if (remaining > -60) {
+    // 60 sek etter at hvile er ferdig, vis "overtid"
+    restEl.textContent = `+${formatTime(-remaining)}`;
+    restEl.classList.add('done');
+    // Vibrer én gang når hvilen når 0
+    if (remaining === 0 && navigator.vibrate) navigator.vibrate([200, 100, 200]);
+  } else {
+    // Stopp hvile-timer etter 60 sek overtid
+    clearInterval(restInterval);
+    restEndTime = null;
+    document.getElementById('restTime').textContent = '--:--';
+    document.getElementById('restTime').classList.remove('done');
+    document.getElementById('restLabel').textContent = 'Hvile';
+  }
+}
+
+// Koble cancel-knapp etter DOM er klar
+setTimeout(() => {
+  const cancelBtn = document.getElementById('timerCancelBtn');
+  if (cancelBtn) cancelBtn.onclick = () => {
+    if (cancelBtn.dataset.confirming === 'yes') {
+      stopSessionTimer();
+      cancelBtn.dataset.confirming = '';
+    } else {
+      cancelBtn.dataset.confirming = 'yes';
+      cancelBtn.textContent = 'Trykk igjen';
+      setTimeout(() => {
+        cancelBtn.dataset.confirming = '';
+        cancelBtn.textContent = 'Stopp';
+      }, 3000);
+    }
+  };
+}, 100);
+
+// Reset timer ved lagring
+const originalSaveSession = saveSession;
+saveSession = async function() {
+  const result = await originalSaveSession.apply(this, arguments);
+  // Etter vellykket lagring, stopp timer
+  setTimeout(() => stopSessionTimer(), 1000);
+  return result;
+};
 
 init();
 </script>
