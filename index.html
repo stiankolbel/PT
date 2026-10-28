@@ -2,7 +2,7 @@
 <html lang="no">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Treningslogg">
@@ -117,6 +117,33 @@
     margin-bottom: 8px;
   }
   
+  .tech { margin: 0 0 8px; font-size: 12px; }
+  .tech summary {
+    cursor: pointer;
+    color: #4f8cff;
+    font-size: 12px;
+    list-style: none;
+    display: inline-block;
+    padding: 2px 0;
+  }
+  .tech summary::-webkit-details-marker { display: none; }
+  .tech[open] summary { margin-bottom: 6px; }
+  .tech ul {
+    margin: 0;
+    padding: 8px 10px 8px 26px;
+    background: #1a1e27;
+    border-radius: 6px;
+    color: #c9ced8;
+    line-height: 1.45;
+  }
+  .tech li { margin-bottom: 4px; }
+  .tech a {
+    display: inline-block;
+    margin-top: 6px;
+    color: #4f8cff;
+    text-decoration: none;
+  }
+
   .rest-info {
     font-size: 11px;
     color: #c4a368;
@@ -401,7 +428,7 @@
 <body>
 
 <h1>Treningslogg</h1>
-<p class="sub" id="subtitle">Push/Pull/Bein/Armer+Skuldre – 6 uker</p>
+<p class="sub" id="subtitle">Overkropp ×3 + Bein – 6 uker</p>
 
 <div class="nav">
   <button class="active" data-view="log">Logg økt</button>
@@ -512,150 +539,262 @@ window.storage = {
   }
 };
 
-// Programdefinisjon - Push/Pull/Bein/Armer+Skuldre (48-år, muskelvekst-fokus)
+// Programdefinisjon - Overkropp x3 + Bein (48 år, muskelvekst-fokus)
+// Øvelsesnavn som også fantes i forrige program er beholdt likt, så "Sist"-data og PR-er følger med.
 const PROGRAM = {
-  'push': {
-    name: 'Push (Mandag)',
-    sub: 'Bryst, skuldre, triceps',
+  'overkropp-a': {
+    name: 'Overkropp A (Mandag)',
+    sub: 'Bryst/rygg tung',
     exercises: [
-      { name: 'Skråbenk manualpress', target: '4 × 6-8 @ RPE 8', sets: 4, rest: '2.5 min', mainLift: true },
-      { name: 'Militærpress stående', target: '3 × 8 @ RPE 8', sets: 3, rest: '2 min', mainLift: true },
-      { name: 'Flat manualpress', target: '3 × 10 @ RPE 8', sets: 3, rest: '90 s' },
-      { name: 'Sideheving (manual)', target: '4 × 12-15 @ RPE 9', sets: 4, rest: '60 s' },
-      { name: 'Cable fly', target: '3 × 12 @ RPE 8', sets: 3, rest: '60 s' },
-      { name: 'Triceps pushdown (tau)', target: '3 × 10-12 @ RPE 8', sets: 3, rest: '90 s' }
-    ]
-  },
-  'pull': {
-    name: 'Pull (Tirsdag)',
-    sub: 'Rygg, biceps, bakre delt',
-    exercises: [
-      { name: 'Pullups (vektet)', target: '4 × 6-8 @ RPE 8', sets: 4, rest: '2.5 min', mainLift: true },
-      { name: 'T-bar row / stang-rodd', target: '3 × 8 @ RPE 8', sets: 3, rest: '2.5 min', mainLift: true },
-      { name: 'Sittende rodd (kabel)', target: '3 × 10 @ RPE 8', sets: 3, rest: '2 min' },
-      { name: 'Lat pulldown', target: '3 × 12 @ RPE 8', sets: 3, rest: '90 s' },
-      { name: 'Face pull', target: '3 × 15 @ RPE 8', sets: 3, rest: '60 s' },
-      { name: 'EZ-curl', target: '3 × 8-10 @ RPE 8', sets: 3, rest: '90 s' },
-      { name: 'Incline manual curl', target: '3 × 10-12 @ RPE 8', sets: 3, rest: '60 s' }
+      { name: 'Skråbenk stangpress', target: '3 × 6-8 @ RPE 8', sets: 3, rest: '2.5 min', mainLift: true },
+      { name: 'Brystsupportert rodd', target: '3 × 8-10 @ RPE 8', sets: 3, rest: '2 min', mainLift: true },
+      { name: 'Flat manualpress', target: '3 × 8-10 @ RPE 8', sets: 3, rest: '2 min' },
+      { name: 'Lat pulldown', target: '3 × 10-12 @ RPE 8', sets: 3, rest: '90 s' },
+      { name: 'Sideheving (kabel, en arm)', target: '3 × 12-15 @ RPE 9', sets: 3, rest: 'Ingen – gå rett til triceps pushdown (supersett)' },
+      { name: 'Triceps pushdown (tau)', target: '3 × 10-12 @ RPE 8', sets: 3, rest: '60 s – deretter tilbake til sideheving (supersett)' }
     ]
   },
   'bein': {
-    name: 'Bein (Torsdag)',
+    name: 'Bein (Tirsdag)',
     sub: 'Full beindag',
     exercises: [
-      { name: 'Knebøy', target: '4 × 5-6 @ RPE 8', sets: 4, rest: '3 min', mainLift: true },
+      { name: 'Knebøy', target: '4 × 6-8 @ RPE 8', sets: 4, rest: '2.5 min', mainLift: true },
       { name: 'Rumensk markløft', target: '3 × 8 @ RPE 8', sets: 3, rest: '2.5 min', mainLift: true },
-      { name: 'Bulgarsk utfall', target: '3 × 10/bein @ RPE 8', sets: 3, rest: '2 min' },
-      { name: 'Leg curl liggende', target: '4 × 10 @ RPE 8', sets: 4, rest: '90 s' },
-      { name: 'Leg extension', target: '3 × 12-15 @ RPE 9', sets: 3, rest: '60 s' },
-      { name: 'Stående kalvhev', target: '4 × 10 @ RPE 9', sets: 4, rest: '90 s' }
+      { name: 'Bulgarsk utfall', target: '2 × 10/bein @ RPE 8', sets: 2, rest: '2 min' },
+      { name: 'Leg curl sittende', target: '3 × 10-12 @ RPE 8', sets: 3, rest: '90 s' },
+      { name: 'Leg extension', target: '2 × 12-15 @ RPE 9', sets: 2, rest: 'Ingen – gå rett til kalvhev (supersett)' },
+      { name: 'Stående kalvhev', target: '3 × 10-12 @ RPE 9', sets: 3, rest: '60 s – deretter tilbake til leg extension (supersett)' }
+    ]
+  },
+  'overkropp-b': {
+    name: 'Overkropp B (Torsdag)',
+    sub: 'Rygg/skuldre + lett bryst',
+    exercises: [
+      { name: 'Pullups (vektet)', target: '3 × 6-8 @ RPE 8', sets: 3, rest: '2.5 min', mainLift: true },
+      { name: 'Militærpress stående', target: '3 × 8 @ RPE 8', sets: 3, rest: '2.5 min', mainLift: true },
+      { name: 'Sittende rodd (kabel)', target: '3 × 10 @ RPE 8', sets: 3, rest: '2 min' },
+      { name: 'Pec deck / cable fly', target: '3 × 12 @ RPE 8', sets: 3, rest: '90 s' },
+      { name: 'Face pull', target: '3 × 15 @ RPE 8', sets: 3, rest: 'Ingen – gå rett til EZ-curl (supersett)' },
+      { name: 'EZ-curl', target: '3 × 8-10 @ RPE 8', sets: 3, rest: '60 s – deretter tilbake til face pull (supersett)' }
     ]
   },
   'armer-skuldre': {
     name: 'Armer + Skuldre (Fredag)',
-    sub: 'Spesialisering - prioritet',
+    sub: 'Spesialisering',
     exercises: [
-      { name: 'DB skulderpress', target: '4 × 8-10 @ RPE 8', sets: 4, rest: '2 min', mainLift: true },
+      { name: 'Triceps dip (vektet)', target: '3 × 8-10 @ RPE 8', sets: 3, rest: '2 min', mainLift: true },
+      { name: 'Enarms manualrodd', target: '3 × 10 @ RPE 8', sets: 3, rest: '90 s', mainLift: true },
       { name: 'Sideheving (kabel, en arm)', target: '4 × 12-15 @ RPE 9', sets: 4, rest: '60 s' },
-      { name: 'Bakre delt fly', target: '4 × 12-15 @ RPE 9', sets: 4, rest: '60 s' },
-      { name: 'Preacher curl', target: '4 × 8-10 @ RPE 8', sets: 4, rest: '90 s' },
-      { name: 'Hammer curl', target: '3 × 10-12 @ RPE 8', sets: 3, rest: '60 s' },
-      { name: 'Triceps dip (vektet)', target: '4 × 8-10 @ RPE 8', sets: 4, rest: '2 min' },
-      { name: 'Overhead triceps extension', target: '3 × 10-12 @ RPE 8', sets: 3, rest: '90 s' }
+      { name: 'Preacher curl', target: '3 × 8-10 @ RPE 8', sets: 3, rest: 'Ingen – gå rett til overhead triceps (supersett)' },
+      { name: 'Overhead triceps extension', target: '3 × 10-12 @ RPE 8', sets: 3, rest: '60 s – deretter tilbake til preacher curl (supersett)' },
+      { name: 'Hammer curl', target: '3 × 10-12 @ RPE 8', sets: 3, rest: 'Ingen – gå rett til bakre delt fly (supersett)' },
+      { name: 'Bakre delt fly', target: '3 × 12-15 @ RPE 9', sets: 3, rest: '60 s – deretter tilbake til hammer curl (supersett)' }
     ]
   }
 };
 
-// Justerer øvelser basert på programmets uke (periodisering)
+// Teknikk: korte punkter + engelsk søkenavn for video
+const TECHNIQUE = {
+  'Skråbenk stangpress': { en: 'incline barbell bench press', tips: [
+    'Benk på ca. 30°. Brattere flytter jobben over på skuldrene.',
+    'Skulderbladene trukket sammen og ned, føttene i gulvet.',
+    'Senk stanga kontrollert til øvre bryst, albuene ca. 45–60° ut.',
+    'Press opp og litt bakover mot linja over skuldrene.'
+  ]},
+  'Brystsupportert rodd': { en: 'chest supported dumbbell row', tips: [
+    'Ligg med brystet mot skråbenk (30–45°), føttene i gulvet.',
+    'La armene henge rett ned og strekk ut i bunnen.',
+    'Trekk albuene bakover og opp mot hofta, skulderbladene sammen.',
+    'Hold brystet mot benken hele veien. Ikke ryk med overkroppen.'
+  ]},
+  'Flat manualpress': { en: 'dumbbell bench press', tips: [
+    'Manualene på lårene. Len deg bakover og spark dem opp når du legger deg ned.',
+    'Skulderbladene trukket sammen og ned, liten bue i ryggen.',
+    'Senk med albuene ca. 45° ut fra kroppen, til manualene er i brysthøyde.',
+    'Press opp og litt innover, uten å slå manualene sammen.',
+    'Avslutt med manualene ned på lårene mens du kommer opp. Ikke slipp dem ut til siden.'
+  ]},
+  'Lat pulldown': { en: 'lat pulldown', tips: [
+    'Grep litt bredere enn skuldrene, lårene låst under putene.',
+    'Len deg litt bakover og trekk stanga mot øvre bryst.',
+    'Tenk «albuene ned i lommene». Ikke dra med armene.',
+    'Slipp kontrollert opp til full strekk.'
+  ]},
+  'Sideheving (kabel, en arm)': { en: 'single arm cable lateral raise', tips: [
+    'Trinsa lavt. Stå sidelengs med håndtaket i hånda lengst unna.',
+    'Lett bøy i albuen, len deg litt ut fra maskinen.',
+    'Løft ut til siden til skulderhøyde, led med albuen.',
+    'Senk sakte. Ikke trekk opp skuldrene.'
+  ]},
+  'Triceps pushdown (tau)': { en: 'rope triceps pushdown', tips: [
+    'Albuene inntil kroppen. Det er bare underarmene som beveger seg.',
+    'Press ned til strake armer og del tauet litt ut i bunnen.',
+    'Slipp opp til ca. 90° i albuen.',
+    'Stå stødig, ikke len deg over tauet.'
+  ]},
+  'Knebøy': { en: 'barbell back squat', tips: [
+    'Stanga på øvre del av trapezius, føttene ca. skulderbredde, tærne litt ut.',
+    'Pust inn og spenn magen før hver rep.',
+    'Sett deg ned mellom hælene, knærne følger tærne.',
+    'Gå så dypt du klarer med nøytral rygg, press opp gjennom hele foten.'
+  ]},
+  'Rumensk markløft': { en: 'romanian deadlift', tips: [
+    'Start stående, stanga i hoftehøyde, lett bøy i knærne.',
+    'Skyv hofta bakover og la stanga gli langs lårene.',
+    'Senk til du kjenner kraftig strekk bak i lårene, ofte rett under kneet.',
+    'Rett rygg hele veien. Reis deg ved å skyve hofta fram.'
+  ]},
+  'Bulgarsk utfall': { en: 'bulgarian split squat', tips: [
+    'Bakre fot på benken, fremre fot et godt steg foran.',
+    'Senk deg rett ned til bakre kne nesten treffer gulvet.',
+    'Lett foroverlent overkropp gir mer sete, oppreist gir mer lår.',
+    'Press opp gjennom fremre hæl. Ta den svakeste siden først.'
+  ]},
+  'Leg curl sittende': { en: 'seated leg curl', tips: [
+    'Juster så knærne er på linje med maskinens akse.',
+    'Lås lårputa godt ned over lårene.',
+    'Bøy helt inn og hold et kort øyeblikk.',
+    'Slipp sakte tilbake til nesten strake bein.'
+  ]},
+  'Leg extension': { en: 'leg extension', tips: [
+    'Knærne på linje med maskinens akse, ankelputa over vristen.',
+    'Strekk helt ut og klem lårmusklene et øyeblikk.',
+    'Senk kontrollert. Ikke slipp vekten ned.',
+    'Hold i håndtakene så rumpa blir i setet.'
+  ]},
+  'Stående kalvhev': { en: 'standing calf raise', tips: [
+    'Fotballen på kanten, hælene fritt.',
+    'Senk til full strekk og hold ca. 1 sekund i bunnen.',
+    'Press opp så høyt du kan på tærne.',
+    'Rolig tempo, ingen sprett.'
+  ]},
+  'Pullups (vektet)': { en: 'weighted pull ups', tips: [
+    'Grep litt bredere enn skuldrene, start fra strake armer.',
+    'Trekk skulderbladene ned først, deretter albuene ned mot sidene.',
+    'Trekk til haka er over stanga.',
+    'Senk kontrollert helt ned, uten sving.'
+  ]},
+  'Militærpress stående': { en: 'standing overhead press', tips: [
+    'Grep litt utenfor skuldrene, stanga på fremre skulder.',
+    'Spenn sete og mage. Ikke len deg bakover.',
+    'Press rett opp. Flytt hodet litt bakover når stanga passerer.',
+    'Stanga over midt på foten i toppen, hodet fram under den.'
+  ]},
+  'Sittende rodd (kabel)': { en: 'seated cable row', tips: [
+    'Sitt oppreist med lett bøy i knærne.',
+    'Trekk håndtaket mot magen, albuene tett inntil kroppen.',
+    'Skulderbladene sammen i bakre posisjon.',
+    'Strekk armene fram uten å runde ryggen.'
+  ]},
+  'Pec deck / cable fly': { en: 'pec deck fly', tips: [
+    'Håndtakene i brysthøyde, lett bøy i albuene som holdes fast.',
+    'Skulderbladene mot ryggputa, brystet fram.',
+    'Før armene sammen i en bue og klem brystet i midten.',
+    'Slipp kontrollert ut til du kjenner strekk, ikke lenger.'
+  ]},
+  'Face pull': { en: 'cable face pull', tips: [
+    'Tau på kabel i panne- eller øyehøyde.',
+    'Trekk mot ansiktet og del tauet ut til sidene.',
+    'Albuene høyt. Avslutt med tomlene pekende bakover.',
+    'Lett vekt og full kontroll. Dette er skulderhelse, ikke ego.'
+  ]},
+  'EZ-curl': { en: 'ez bar curl', tips: [
+    'Albuene inntil kroppen, stå oppreist.',
+    'Curl opp uten å svinge med overkroppen.',
+    'Klem biceps på toppen.',
+    'Senk helt ned til strake armer.'
+  ]},
+  'Triceps dip (vektet)': { en: 'weighted dips', tips: [
+    'Start på strake armer, skuldrene ned fra ørene.',
+    'Senk til ca. 90° i albuen. Gå ikke dypere hvis skuldrene klager.',
+    'Oppreist overkropp gir mer triceps, foroverlent gir mer bryst.',
+    'Press opp til strake armer uten å låse hardt.'
+  ]},
+  'Enarms manualrodd': { en: 'one arm dumbbell row', tips: [
+    'Hånd og kne på benken, rygg flat og parallell med gulvet.',
+    'La manualen henge rett ned og strekk ut.',
+    'Trekk albuen opp og bakover mot hofta.',
+    'Ikke vri overkroppen for å få opp vekten.'
+  ]},
+  'Preacher curl': { en: 'preacher curl', tips: [
+    'Overarmene flatt mot puta, armhulene tett inntil kanten.',
+    'Senk til nesten strake armer. Ikke slipp ned de siste centimeterne.',
+    'Curl opp uten å løfte albuene fra puta.',
+    'Rolig ned. Bunnen er der biceps er mest sårbar.'
+  ]},
+  'Overhead triceps extension': { en: 'cable overhead triceps extension', tips: [
+    'Tau på kabel i brysthøyde. Ryggen mot maskinen, ett steg fram og lett foroverlent.',
+    'Albuene peker fram og holdes i ro.',
+    'Strekk armene fram og opp til strake armer.',
+    'Slipp kontrollert til full strekk bak hodet.'
+  ]},
+  'Hammer curl': { en: 'hammer curl', tips: [
+    'Nøytralt grep, tomlene peker opp.',
+    'Albuene inntil kroppen.',
+    'Curl opp mot skulderen, en og en eller samtidig.',
+    'Senk helt ned uten sving.'
+  ]},
+  'Bakre delt fly': { en: 'reverse pec deck', tips: [
+    'Brystet mot puta i pec deck, håndtakene i skulderhøyde.',
+    'Lett bøy i albuene. Før armene bakover og ut.',
+    'Stopp når armene er på linje med kroppen. Ikke klem skulderbladene hardt.',
+    'Lett vekt og kontroll. Bakre delt er en liten muskel.'
+  ]}
+};
+
+function techHtml(name) {
+  const t = TECHNIQUE[name];
+  if (!t) return '';
+  const url = 'https://www.youtube.com/results?search_query=' + encodeURIComponent(t.en + ' form');
+  return `<details class="tech"><summary>ℹ️ Teknikk</summary><ul>${t.tips.map(x => `<li>${x}</li>`).join('')}</ul><a href="${url}" target="_blank" rel="noopener">🎥 Se video: «${t.en}»</a></details>`;
+}
+
+// Periodisering: reps holdes fast, volum bygges, deload i uke 6.
+// Dobbel progresjon: topp av repintervallet på alle sett -> øk vekten neste økt.
 function adjustForWeek(exercises, week) {
   return exercises.map(ex => {
-    const adjusted = { ...ex };
-    
-    if (ex.mainLift) {
-      // Hovedløft: hypertrofi-fokus, moderate reps, 6-ukers blokker for 48+
-      // Baseline reps beholdes fra øvelsen, men RPE/sett justeres per uke
-      const baseTarget = ex.target;
-      switch(week) {
-        case 1:
-          // Introduksjon
-          adjusted.target = baseTarget.replace(/@ RPE \d+/, '@ RPE 7');
-          break;
-        case 2:
-          // Bygging
-          adjusted.target = baseTarget.replace(/@ RPE \d+/, '@ RPE 8');
-          break;
-        case 3:
-          // Topp volum + 1 ekstra sett
-          const setsMatch = baseTarget.match(/^(\d+) ×/);
-          if (setsMatch) {
-            const newSets = parseInt(setsMatch[1]) + 1;
-            adjusted.target = baseTarget.replace(/^\d+ ×/, `${newSets} ×`).replace(/@ RPE \d+/, '@ RPE 8');
-            adjusted.sets = newSets;
-          }
-          break;
-        case 4:
-          // DELOAD - halvert volum
-          const deloadSets = 2;
-          adjusted.target = baseTarget.replace(/^\d+ ×/, `${deloadSets} ×`).replace(/@ RPE \d+/, '@ RPE 5-6 (65% av uke 3)');
-          adjusted.sets = deloadSets;
-          break;
-        case 5:
-          // Intensivering - senk reps, øk vekt
-          adjusted.target = baseTarget.replace(/× \d+-?\d*/, m => {
-            // Senk øvre rep-grense
-            const nums = m.match(/\d+/g).map(Number);
-            const newLow = Math.max(4, nums[0] - 2);
-            const newHigh = nums[1] ? Math.max(6, nums[1] - 2) : newLow;
-            return newLow === newHigh ? `× ${newLow}` : `× ${newLow}-${newHigh}`;
-          }).replace(/@ RPE \d+/, '@ RPE 8 (+2.5-5kg)');
-          break;
-        case 6:
-          // Peak intensivering - RPE 9
-          adjusted.target = baseTarget.replace(/× \d+-?\d*/, m => {
-            const nums = m.match(/\d+/g).map(Number);
-            const newLow = Math.max(4, nums[0] - 2);
-            const newHigh = nums[1] ? Math.max(6, nums[1] - 2) : newLow;
-            return newLow === newHigh ? `× ${newLow}` : `× ${newLow}-${newHigh}`;
-          }).replace(/@ RPE \d+/, '@ RPE 9 (+2.5kg)');
-          break;
-      }
-    } else {
-      // Assistanseøvelser
-      if (week === 4) {
-        // Deload: halvert volum, ~70% av vanlig vekt
-        const newSets = Math.max(2, Math.ceil(ex.sets / 2));
-        adjusted.sets = newSets;
-        adjusted.target = ex.target.replace(/^\d+ ×/, `${newSets} ×`).replace(/@ RPE \d+/, '@ RPE 5-6 (~70% vekt)');
-      } else if (week === 5 || week === 6) {
-        // Lett intensivering på assistanse: senk reps med 2 hvis 8+
-        const repMatch = ex.target.match(/× (\d+)-?(\d+)?/);
-        if (repMatch) {
-          const low = parseInt(repMatch[1]);
-          const high = repMatch[2] ? parseInt(repMatch[2]) : low;
-          if (low >= 8) {
-            const newLow = Math.max(6, low - 2);
-            const newHigh = Math.max(8, high - 2);
-            const repStr = newLow === newHigh ? `× ${newLow}` : `× ${newLow}-${newHigh}`;
-            adjusted.target = ex.target.replace(/× \d+-?\d+?/, repStr);
-          }
-        }
-      }
+    const a = { ...ex };
+    const setRe = /^\d+ ×/;
+    const rpeRe = /@ RPE \d+/;
+    const withSets = (n) => { a.sets = n; a.target = a.target.replace(setRe, `${n} ×`); };
+    switch (week) {
+      case 1:
+        a.target = a.target.replace(rpeRe, '@ RPE 7');
+        break;
+      case 2:
+        a.target = a.target.replace(rpeRe, '@ RPE 8');
+        break;
+      case 3:
+        if (ex.mainLift) withSets(ex.sets + 1);
+        a.target = a.target.replace(rpeRe, '@ RPE 8');
+        break;
+      case 4:
+        if (ex.mainLift) withSets(ex.sets + 1);
+        a.target = a.target.replace(rpeRe, '@ RPE 8-9');
+        break;
+      case 5:
+        if (ex.mainLift) withSets(ex.sets + 1);
+        a.target = a.target.replace(rpeRe, '@ RPE 9');
+        break;
+      case 6:
+        withSets(Math.max(2, Math.ceil(ex.sets / 2)));
+        a.target = a.target.replace(rpeRe, '@ RPE 5-6 (~70% vekt)');
+        break;
     }
-    
-    return adjusted;
+    return a;
   });
 }
 
 const WEEK_GUIDE = {
-  1: 'Introduksjon – RPE 7 på hovedløft, teknikk-fokus',
-  2: 'Bygging – RPE 8, samme vekt eller +2.5kg',
-  3: 'Topp volum – +1 sett på hovedløft, RPE 8',
-  4: 'DELOAD – halvert volum, 65% av uke 3, RPE 5-6',
-  5: 'Intensivering – lavere reps, +2.5-5kg, RPE 8',
-  6: 'Peak – lavere reps, RPE 9, sette PR-er'
+  1: 'Introduksjon – RPE 7, finn arbeidsvektene',
+  2: 'Bygging – RPE 8, dobbel progresjon',
+  3: 'Volum – +1 sett på de to første øvelsene, RPE 8',
+  4: 'Volum – samme sett som uke 3, RPE 8-9',
+  5: 'Topp – samme sett som uke 3–4, RPE 9 (nær failure)',
+  6: 'DELOAD – halvert volum, ~70% vekt, RPE 5-6'
 };
 
-let currentDay = 'push';
+let currentDay = 'overkropp-a';
 let currentWeek = 1;
 let editingSessionKey = null; // If set, save will update this key instead of creating new
 
@@ -754,6 +893,7 @@ async function renderExercises() {
           <div class="ex-name">${ex.name}</div>
           <div class="ex-target">${ex.target}</div>
         </div>
+        ${techHtml(ex.name)}
         ${ex.rest ? `<div class="rest-info">⏱ Hvile: ${ex.rest}</div>` : ''}
         ${lastHtml}
         <div class="header-row">
@@ -858,23 +998,21 @@ async function getLastSessionData(dayKey) {
     if (!result || !result.keys) return {};
     
     const sessionKeys = result.keys.sort().reverse(); // newest first
+    const map = {};
     
     for (const key of sessionKeys) {
       try {
         const r = await window.storage.get(key);
         if (!r) continue;
         const session = JSON.parse(r.value);
-        if (session.day === dayKey) {
-          // Build map of exercise -> sets
-          const map = {};
-          session.exercises.forEach(ex => {
-            map[ex.name] = { sets: ex.sets, date: session.date };
-          });
-          return map;
-        }
+        // Finn siste gang hver øvelse ble logget, uansett dag/program
+        (session.exercises || []).forEach(ex => {
+          const hasData = (ex.sets || []).some(s => s.weight || s.reps);
+          if (hasData && !map[ex.name]) map[ex.name] = { sets: ex.sets, date: session.date };
+        });
       } catch(e) {}
     }
-    return {};
+    return map;
   } catch(e) {
     return {};
   }
@@ -1024,6 +1162,10 @@ async function updatePRs(exercises) {
 }
 
 async function loadSessionForEdit(session) {
+  if (!PROGRAM[session.day]) {
+    alert('Denne økten er fra forrige program og kan ikke redigeres her. Den ligger fortsatt i historikken.');
+    return;
+  }
   editingSessionKey = session._key;
   
   // Switch to log view
@@ -1095,7 +1237,7 @@ async function loadState() {
     if (r) {
       const state = JSON.parse(r.value);
       // Valider mot gyldige dager i nåværende program
-      currentDay = state.day && PROGRAM[state.day] ? state.day : 'push';
+      currentDay = state.day && PROGRAM[state.day] ? state.day : 'overkropp-a';
       // Valider uke innen 1-6
       const w = parseInt(state.week);
       currentWeek = (w >= 1 && w <= 6) ? w : 1;
@@ -1505,14 +1647,11 @@ function parseRestSeconds(restStr) {
   // "3 min", "2.5 min", "90 s", "60 s"
   if (!restStr) return 0;
   const s = restStr.toLowerCase();
-  if (s.includes('min')) {
-    const min = parseFloat(s.replace('min', '').trim());
-    return Math.round(min * 60);
-  }
-  if (s.includes('s')) {
-    return parseInt(s.replace('s', '').trim());
-  }
-  return 0;
+  // Tar første tall + enhet, f.eks. "60 s – deretter ..." eller "2.5 min"
+  const m = s.match(/(\d+(?:[.,]\d+)?)\s*(min|s)\b/);
+  if (!m) return 0; // f.eks. supersett: "Ingen – gå rett til ..."
+  const n = parseFloat(m[1].replace(',', '.'));
+  return m[2] === 'min' ? Math.round(n * 60) : Math.round(n);
 }
 
 function startRestTimer(restStr, row) {
@@ -1523,7 +1662,7 @@ function startRestTimer(restStr, row) {
   startSessionTimer();
   
   restEndTime = Date.now() + seconds * 1000;
-  document.getElementById('restLabel').textContent = `Hvile (${restStr})`;
+  document.getElementById("restLabel").textContent = `Hvile (${formatTime(seconds)})`;
   document.getElementById('restTime').classList.remove('done');
   
   if (restInterval) clearInterval(restInterval);
